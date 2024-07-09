@@ -1,0 +1,12 @@
+.aws-sam/
+__pycache__/
+.git
+tests
+pyenvunittests
+.coverage
+coverage.xml
+global_resources/
+.terraform/
+.terraform.*
+terraform.tfstate*
+samconfig.toml
