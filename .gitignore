@@ -10,3 +10,5 @@ global_resources/
 .terraform.*
 terraform.tfstate*
 samconfig.toml
+IaC/terraform_minimal
+IaC/terraform_minimal/
