@@ -1,9 +1,3 @@
----
-- name: Setup nginx
-  hosts: {{ tfnode }}
-  tasks:
-    - import_role:
-        name: podman
-      vars:
-        dir: group_vars
-      become: true
+- hosts: all
+  roles:
+    - podman

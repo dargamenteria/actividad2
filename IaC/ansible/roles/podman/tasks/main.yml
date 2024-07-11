@@ -1,0 +1,21 @@
+- name: Update packages
+  become: true
+  apt:
+    update_cache: yes
+
+
+- name: Install stuff
+  become: true
+  ansible.builtin.apt:
+    name: "{{ item }}"
+  with_items:
+    - "{{ tfnode.packages }}"
+
+- name: Get podman version
+  ansible.builtin.command: podman --version
+  register: podman
+
+- name: Prints two lines of messages, but only if there is an environment value set
+  ansible.builtin.debug:
+    msg: 
+    - "Podman running on version {{ podman.stdout }}"

@@ -1,3 +1,4 @@
-localhost:
+tfnode:
   packages:
     - podman
+    - tree

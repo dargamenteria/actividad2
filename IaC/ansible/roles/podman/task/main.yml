@@ -1,6 +1,0 @@
----
-- name: Install stuff
-  ansible.builtin.apt:
-    name: "{{ item }}"
-  with_items:
-    - "{{ tfnode.packages }}"
