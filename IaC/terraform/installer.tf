@@ -88,7 +88,7 @@ resource "local_file" "k8s_config" {
 
   provisioner "local-exec" {
     working_dir = "../ansible"
-    command     = "ansible-playbook -v -i inventories/azure/hosts.yml -u dani aks.yml"
+    command     = "ansible-playbook -v -i inventories/local/hosts.yml -u dani aks.yml"
   }
   depends_on = [
     azurerm_kubernetes_cluster.aks["aks"]
