@@ -1,0 +1,13 @@
+packages:
+  - podman
+  - tree
+container:
+  localPath: /data
+  containerPath: /usr/share/nginx/html
+registry:
+  admin_password: "ejoIdhByMjVGuC+DMoaBEANImo/bjUIvlvZDM7FM4n+ACRBvb1Xo"
+  admin_username: "acrunir"
+  source_repo: "registry.hub.docker.com/nginx:latest"
+  source_img: "nginx:latest"
+  dest_repo: "acrunir.azurecr.io"
+  dest_img: "nginx:casopractico2"

@@ -1,0 +1,12 @@
+- name: Create namesepace argocd
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ role_path }}/files/config.yml"
+    src: "{{ role_path }}/files/argocd/namespace.yml"
+
+- name: Deploy argocd
+  kubernetes.core.k8s:
+    namespace: argocd
+    kubeconfig: "{{ role_path }}/files/config.yml"
+    state: present
+    src: "https://raw.githubusercontent.com/argoproj/argo-cd/v2.9.18/manifests/install.yaml"

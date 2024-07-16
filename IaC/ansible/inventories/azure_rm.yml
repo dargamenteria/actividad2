@@ -1,4 +1,0 @@
-plugin: azure_rm
-auth_source:  credential_file
-include_vm_resource_groups:
-  - unir-arga2

@@ -4,6 +4,8 @@ resource "azurerm_nat_gateway" "ngw" {
   location            = each.value.location
   name                = each.key
   resource_group_name = azurerm_resource_group.rgs[each.value.rg].name
+  tags                = merge(each.value.tags, var.provider_default_tags)
+
 }
 
 resource "azurerm_public_ip" "ngw-ip" {
@@ -13,6 +15,8 @@ resource "azurerm_public_ip" "ngw-ip" {
   resource_group_name = azurerm_resource_group.rgs[each.value.rg].name
   allocation_method   = "Static"
   sku                 = "Standard"
+  tags                = merge(each.value.tags, var.provider_default_tags)
+
 }
 
 

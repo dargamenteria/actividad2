@@ -4,6 +4,7 @@ resource "azurerm_public_ip" "pub_ip" {
   location            = each.value.location
   resource_group_name = azurerm_resource_group.rgs[each.value.rg].name
   allocation_method   = "Dynamic"
+  tags                = merge(each.value.tags, var.provider_default_tags)
 }
 
 resource "azurerm_network_interface" "wms_ani" {
@@ -19,6 +20,7 @@ resource "azurerm_network_interface" "wms_ani" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = each.value.public_ip == true ? azurerm_public_ip.pub_ip[each.key].id : null
   }
+  tags = merge(each.value.tags, var.provider_default_tags)
 }
 
 

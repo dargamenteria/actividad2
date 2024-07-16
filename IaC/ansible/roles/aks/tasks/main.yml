@@ -1,0 +1,11 @@
+- name: Get Cluster information
+  kubernetes.core.k8s_cluster_info:
+    context: aksunir
+  register: api_status
+
+- name: Show Cluster info
+  ansible.builtin.debug:
+    msg: "{{ api_status }}"
+
+#- include_tasks: "argocd.yml"
+- include_tasks: "wp.yml"

@@ -41,6 +41,7 @@ variable "snets" {
     prefix  = list(string)
     public  = bool
     ngw     = string
+    tags    = map(any)
 
   }))
 }
@@ -50,6 +51,8 @@ variable "ngw" {
     enabled  = bool
     location = string
     rg       = string
+    tags     = map(any)
+
   }))
 }
 
@@ -58,22 +61,25 @@ variable "nsg" {
     enabled  = bool
     location = string
     rg       = string
+    tags     = map(any)
   }))
 }
+
 variable "nsgr" {
-  type = map(object({
+  type = list(object({
 
     rg  = string
     nsg = string
 
-    priority           = number
-    direction          = string
-    access             = string
-    protocol           = string
-    source_range       = string
-    destination_range  = string
-    source_prefix      = string
-    destination_prefix = string
+    priority  = number
+    direction = string
+    access    = string
+    protocol  = string
+    sr        = string
+    dr        = string
+    sp        = string
+    dp        = string
+    tags      = map(any)
 
   }))
 }
@@ -81,6 +87,7 @@ variable "snet_nsg" {
   type = map(object({
     snet = string
     nsg  = string
+    tags = map(any)
 
   }))
 }
@@ -108,3 +115,36 @@ variable "vms" {
     tags = map(any)
   }))
 }
+
+variable "acr" {
+  type = map(object({
+    enabled       = bool
+    rg            = string
+    location      = string
+    admin_enabled = bool
+    sku           = string
+    tags          = map(any)
+  }))
+}
+
+variable "aks" {
+  type = map(object({
+    enabled    = bool
+    rg         = string
+    location   = string
+    dns_prefix = string
+    lp = object({
+      user    = string
+      ssh_key = string
+    })
+    tags = map(any)
+  }))
+}
+variable "dns" {
+  type = map(object({
+    enabled = bool
+    rg      = string
+    tags    = map(any)
+  }))
+}
+

@@ -1,0 +1,26 @@
+- name: Create namesepace wp
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ role_path }}/files/config.yml"
+    src: "{{ role_path }}/files/wp/namespace.yml"
+
+- name: Create the deployments
+  kubernetes.core.k8s:
+    namespace: wp
+    state: present
+    template: '{{ role_path }}/templates/{{ item }}'
+  with_items:
+    - registry-credentials.yaml.j2
+    - mysql-deployment.yaml.j2
+    - wordpress-deployment.yaml.j2
+
+- name: Get wordpress service
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Service
+    namespace: wp
+  register: service_list
+
+- name: Show wordpress service
+  ansible.builtin.debug:
+    msg: "{{ service_list }}"

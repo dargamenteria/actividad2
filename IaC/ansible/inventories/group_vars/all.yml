@@ -1,4 +1,0 @@
-tfnode:
-  packages:
-    - podman
-    - tree

@@ -1,0 +1,14 @@
+- name: Log into private registry and force re-authorization
+  docker_login:
+    registry: "{{ registry.dest_repo }}"
+    username: "{{ registry.admin_username }}"
+    password: "{{ registry.admin_password }}"
+    reauthorize: true
+
+- name: Build an image and push it to a private repo
+  docker_image:
+    build:
+      path: "{{ role_path}}/files"
+    name: "{{ registry.dest_repo }}/{{ registry.dest_img }}"
+    push: true
+    source: build

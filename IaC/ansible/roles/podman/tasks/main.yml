@@ -1,7 +1,7 @@
 - name: Update packages
   become: true
-  apt:
-    update_cache: yes
+  ansible.builtin.apt:
+    update_cache: true
 
 
 - name: Install stuff
@@ -9,13 +9,62 @@
   ansible.builtin.apt:
     name: "{{ item }}"
   with_items:
-    - "{{ tfnode.packages }}"
+    - "{{ packages }}"
 
-- name: Get podman version
-  ansible.builtin.command: podman --version
-  register: podman
+# - name: Get podman version
+#  ansible.builtin.command: podman --version
+#  register: podman
 
-- name: Prints two lines of messages, but only if there is an environment value set
+# - name: Print podman version
+#   ansible.builtin.debug:
+#     msg:
+#       - "Podman running on version {{ podman.stdout }}"
+
+- name: Create statefull vol
+  become: true
+  ansible.builtin.file:
+    path: /data
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Dummy Conntent
+  ansible.builtin.shell: echo $(date) >> /data/date
+
+- name: Login to ACR
+  containers.podman.podman_login:
+    authfile: ~/.config/containers/auth.json
+    username: "{{ registry.admin_username }}"
+    password: "{{ registry.admin_password }}"
+    registry: "{{ registry.dest_repo }}"
+
+- name: Run container
+  containers.podman.podman_container:
+    name: "webserver"
+    authfile: ~/.config/containers/auth.json
+    image: "{{ registry.dest_repo }}/{{ registry.dest_img }}"
+    volume: "{{ container.localPath }}:{{ container.containerPath }}"
+    restart_policy: "always"
+    ports:
+      - 8080:80
+    state: started
+
+- name: Logout to ACR
+  containers.podman.podman_logout:
+    authfile: ~/.config/containers/auth.json
+    all: true
+
+
+- name: Check that you can connect (GET) to a page and it returns a status 200
+  ansible.builtin.uri:
+    url: http://{{ ansible_host }}:8080/date
+    return_content: true
+  register: content
+
+- name: Show url content
   ansible.builtin.debug:
-    msg: 
-    - "Podman running on version {{ podman.stdout }}"
+    msg: |-
+      URL: "{{ content.url }}"
+      Status: {{ content.status }}
+      Content: {{ content.content }}
