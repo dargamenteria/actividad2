@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- namespace.yml
+- deployment.yml
+- service.yml
+
+namespace: unir-prod
+images:
+- name: acrunir.azurecr.io/unir
+  newTag: f1c5f2f3

@@ -1,0 +1,16 @@
+- name: Create namesepace tekton
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ role_path }}/files/config.yml"
+    src: "{{ role_path }}/files/tekton/namespace.yml"
+
+- name: Deploy tekton
+  kubernetes.core.k8s:
+    kubeconfig: "{{ role_path }}/files/config.yml"
+    state: present
+    src: "{{ item }}"
+  with_items:
+    - "https://storage.googleapis.com/tekton-releases/dashboard/latest/release.yaml"
+    - "https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml"
+    - "https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml"
+    - "https://storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml"

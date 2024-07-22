@@ -1,131 +1,160 @@
--   [Creación de la
-    infraestructura](#creación-de-la-infraestructura){#toc-creación-de-la-infraestructura}
-    -   [Acceso a la cuenta de
-        Azure](#acceso-a-la-cuenta-de-azure){#toc-acceso-a-la-cuenta-de-azure}
-        -   [Instalación de Azure
-            Cli](#instalación-de-azure-cli){#toc-instalación-de-azure-cli}
-    -   [Aprovisionamiento de
-        Infra](#aprovisionamiento-de-infra){#toc-aprovisionamiento-de-infra}
-        -   [Creación de una *storage account* para el almacenamiento
-            del
-            *tfstate*](#creación-de-una-storage-account-para-el-almacenamiento-del-tfstate){#toc-creación-de-una-storage-account-para-el-almacenamiento-del-tfstate}
-        -   [Terraformación](#terraformación){#toc-terraformación}
-            -   [Preliminares](#preliminares){#toc-preliminares}
-            -   [Código
-                terraform](#código-terraform){#toc-código-terraform}
-            -   [Recusos
-                creados](#recusos-creados){#toc-recusos-creados}
-    -   [Configuración de la
-        infra](#configuración-de-la-infra){#toc-configuración-de-la-infra}
-        -   [Preliminares](#preliminares-1){#toc-preliminares-1}
-            -   [Inventario
-                dinámico](#inventario-dinámico){#toc-inventario-dinámico}
-            -   [Generar un inventario estático
-                dinamicamente](#generar-un-inventario-estático-dinamicamente){#toc-generar-un-inventario-estático-dinamicamente}
-        -   [Configuración de la infra utilizando *Terraform* y
-            *Ansible*](#configuración-de-la-infra-utilizando-terraform-y-ansible){#toc-configuración-de-la-infra-utilizando-terraform-y-ansible}
-            -   [Installer](#installer){#toc-installer}
-            -   [Configuración del
-                *ACR*](#configuración-del-acr){#toc-configuración-del-acr}
-            -   [Configuración del
-                *WebServer*](#configuración-del-webserver){#toc-configuración-del-webserver}
-        -   [Salida de la ejecución de la
-            configuración](#salida-de-la-ejecución-de-la-configuración){#toc-salida-de-la-ejecución-de-la-configuración}
-        -   [Configurción de AKS utilizando Terraform y
-            Ansible](#configurción-de-aks-utilizando-terraform-y-ansible){#toc-configurción-de-aks-utilizando-terraform-y-ansible}
-    -   [K8S](#k8s){#toc-k8s}
-        -   [Imágenes](#imágenes){#toc-imágenes}
-        -   [Secretos](#secretos){#toc-secretos}
-        -   [Manifiestos](#manifiestos){#toc-manifiestos}
-            -   [Frontend](#frontend){#toc-frontend}
-            -   [Mysql](#mysql){#toc-mysql}
-        -   [Problemas:](#problemas){#toc-problemas}
-            -   [Límite de ips públicas de la
-                cuenta](#límite-de-ips-públicas-de-la-cuenta){#toc-límite-de-ips-públicas-de-la-cuenta}
-        -   [Soluciones:](#soluciones){#toc-soluciones}
-            -   [Límite de ips públicas de la
-                cuenta](#límite-de-ips-públicas-de-la-cuenta-1){#toc-límite-de-ips-públicas-de-la-cuenta-1}
-        -   [User tests](#user-tests){#toc-user-tests}
+# Preliminares
+## Estructura de la practica
+La práctica se encuentra repositada en el siguiente respositorio de github: [Actividad2](https://github.com/dargamenteria/actividad2)
+La estructura de la misma se muestra a continuación:
+* En la carpeta IaC encontraremos el código *Terraform* y *Ansible* de la solución.
+* En la carpeta dos encontraremos la documentación de la solución.
+* En la carpeta k8s hay pruebas y tests adicionales que se han hecho aprobechando la coyuntura.
 
--   [Creación de la infraestructura](#creación-de-la-infraestructura)
-    -   [Acceso a la cuenta de Azure](#acceso-a-la-cuenta-de-azure)
-        -   [Instalación de Azure Cli](#instalación-de-azure-cli)
-    -   [Aprovisionamiento de Infra](#aprovisionamiento-de-infra)
-        -   [Creación de una *storage account* para el almacenamiento
-            del
-            *tfstate*](#creación-de-una-storage-account-para-el-almacenamiento-del-tfstate)
-        -   [Terraformación](#terraformación)
-            -   [Preliminares](#preliminares)
-            -   [Código terraform](#código-terraform)
-            -   [Recusos creados](#recusos-creados)
-    -   [Configuración de la infra](#configuración-de-la-infra)
-        -   [Preliminares](#preliminares-1)
-            -   [Inventario dinámico](#inventario-dinámico)
-            -   [Generar un inventario estático
-                dinamicamente](#generar-un-inventario-estático-dinamicamente)
-        -   [Configuración de la infra utilizando *Terraform* y
-            *Ansible*](#configuración-de-la-infra-utilizando-terraform-y-ansible)
-            -   [Installer](#installer)
-            -   [Configuración del *ACR*](#configuración-del-acr)
-            -   [Configuración del
-                *WebServer*](#configuración-del-webserver)
-        -   [Salida de la ejecución de la
-            configuración](#salida-de-la-ejecución-de-la-configuración)
-        -   [Configurción de AKS utilizando Terraform y
-            Ansible](#configurción-de-aks-utilizando-terraform-y-ansible)
-    -   [K8S](#k8s)
-        -   [Imágenes](#imágenes)
-        -   [Secretos](#secretos)
-        -   [Manifiestos](#manifiestos)
-            -   [Frontend](#frontend)
-            -   [Mysql](#mysql)
-        -   [Problemas:](#problemas)
-            -   [Límite de ips públicas de la
-                cuenta](#límite-de-ips-públicas-de-la-cuenta)
-        -   [Soluciones:](#soluciones)
-            -   [Límite de ips públicas de la
-                cuenta](#límite-de-ips-públicas-de-la-cuenta-1)
-        -   [User tests](#user-tests)
-
+```bash
+├── docs
+│   ├── Caso_Practico_2.md
+│   ├── md.sh
+│   └── _resources
+├── IaC
+│   ├── ansible
+│   │   ├── aks.yml
+│   │   ├── a.txt
+│   │   ├── inventories
+│   │   │   ├── azure
+│   │   │   │   ├── group_vars
+│   │   │   │   │   └── azure
+│   │   │   │   │       └── main.yml
+│   │   │   │   └── hosts.yml
+│   │   │   └── local
+│   │   │       ├── group_vars
+│   │   │       │   └── local
+│   │   │       │       ├── k8s.yml
+│   │   │       │       └── main.yml
+│   │   │       └── hosts.yml
+│   │   ├── registry.yml
+│   │   ├── roles
+│   │   │   ├── acr
+│   │   │   │   ├── files
+│   │   │   │   │   ├── a.html
+│   │   │   │   │   └── Dockerfile
+│   │   │   │   └── tasks
+│   │   │   │       └── main.yml
+│   │   │   ├── aks
+│   │   │   │   ├── files
+│   │   │   │   │   ├── argocd
+│   │   │   │   │   │   ├── loadbalancer.yml
+│   │   │   │   │   │   └── namespace.yml
+│   │   │   │   │   ├── config.yml
+│   │   │   │   │   ├── tekton
+│   │   │   │   │   │   └── namespace.yml
+│   │   │   │   │   └── wp
+│   │   │   │   │       ├── mysql-deployment.yml
+│   │   │   │   │       ├── mysql-pvc.yml
+│   │   │   │   │       ├── mysql-service.yml
+│   │   │   │   │       ├── namespace.yml
+│   │   │   │   │       └── secret.yml
+│   │   │   │   ├── tasks
+│   │   │   │   │   ├── argocd.yml
+│   │   │   │   │   ├── main.yml
+│   │   │   │   │   ├── tekton.yml
+│   │   │   │   │   └── wp.yml
+│   │   │   │   └── templates
+│   │   │   │       ├── mysql-deployment.yaml.j2
+│   │   │   │       ├── registry-credentials.yaml.j2
+│   │   │   │       └── wordpress-deployment.yaml.j2
+│   │   │   └── podman
+│   │   │       └── tasks
+│   │   │           └── main.yml
+│   │   └── tfnode.yml
+│   └── terraform
+│       ├── acr.tf
+│       ├── aks.tf
+│       ├── dns.tf
+│       ├── graph.svg
+│       ├── installer.tf
+│       ├── locals.tf
+│       ├── provider.tf
+│       ├── resources
+│       │   ├── ips.yaml
+│       │   ├── scripts
+│       │   │   ├── cloud-init.yml
+│       │   │   └── webserver.sh
+│       │   └── templates
+│       │       ├── deployer_vars.tpl
+│       │       ├── remote_inventory.tpl
+│       │       └── remote_vars.tpl
+│       ├── rg.tf
+│       ├── setup.sh
+│       ├── sg.tf
+│       ├── terraform.tf
+│       ├── terraform.tfstate
+│       ├── terraform.tfstate.backup
+│       ├── terraform.tfvars
+│       ├── variables.tf
+│       ├── vm.tf
+│       └── vpc.tf
+├── k8s
+│   ├── argocd
+│   │   ├── deployment
+│   │   │   └── prod
+│   │   │       ├── deployment.yml
+│   │   │       ├── kustomization.yml
+│   │   │       ├── namespace.yml
+│   │   │       ├── registry-credentials.yml
+│   │   │       └── service.yml
+│   │   ├── Dockerfile
+│   │   └── main.py
+│   └── helm
+│       └── wordpress
+│           ├── charts
+│           ├── Chart.yaml
+│           ├── templates
+│           │   ├── deployment.yaml
+│           │   ├── _helpers.tpl
+│           │   ├── hpa.yaml
+│           │   ├── ingress.yaml
+│           │   ├── NOTES.txt
+│           │   ├── persistenVolumeClaim.yaml
+│           │   ├── serviceaccount.yaml
+│           │   ├── service.yaml
+│           │   └── tests
+│           │       └── test-connection.yaml
+│           └── values.yaml
+└── README.md
+```
 # Creación de la infraestructura
 
 ## Acceso a la cuenta de Azure
 
 ### Instalación de Azure Cli
 
-Instalamos en local la herramienta de Azure Cli para poder interacturar
-con el proveedor de forma programática\
-![2c6812889d651e01a89c42001cec11ce.png](_resources/2c6812889d651e01a89c42001cec11ce.png)
+Instalamos en local la herramienta de Azure Cli para poder interacturar con el proveedor de forma programática  
+![2c6812889d651e01a89c42001cec11ce.png](:/c175ada9226d4716a6cb1b81601796c2)
 
-Una vez instalada la herramienta probamos el acceso via az login\
-![aee59ff975750a4a2975cd10b200abdf.png](_resources/aee59ff975750a4a2975cd10b200abdf.png)\
-Y verificamos los datos\
-![2ebd4e6ae9634f33591a00c1f62610e3.png](_resources/2ebd4e6ae9634f33591a00c1f62610e3.png)
+Una vez instalada la herramienta probamos el acceso via az login  
+![aee59ff975750a4a2975cd10b200abdf.png](:/612be530e33b4e48bc6c933e87227e85)  
+Y verificamos los datos  
+![2ebd4e6ae9634f33591a00c1f62610e3.png](:/95ded4b2e1f54c64a3d9c9de1d60132a)
 
 ## Aprovisionamiento de Infra
 
-Para la provisión de la infraestructura vamos a utilizar OpenTofu. Antes
-de realizar cualquier acción se va a crear una *storage account* para
-almacenar ahí el fichero de estado *tfstate*.
+Para la provisión de la infraestructura vamos a utilizar OpenTofu. Antes de realizar cualquier acción se va a crear una *storage account* para almacenar ahí el fichero de estado *tfstate*.
 
 ### Creación de una *storage account* para el almacenamiento del *tfstate*
 
-Con el siguiente *script* creamos una *storage account* para el
-almacenamiento del *tfstate*. Definimos una serie de variables para
-personalizar la creación de la cuenta y lo creamos en *northeurope* esta
-localización será la que usaremos a lo largo del proyecto por defecto.
+Con el siguiente *script* creamos una *storage account* para el almacenamiento del *tfstate*. Definimos una serie de variables para personalizar la creación de la cuenta y lo creamos en *northeurope* esta localización será la que usaremos a lo largo del proyecto por defecto.
 
-    #!/bin/bash
+```
+#!/bin/bash
 
-    RESOURCE_GROUP_NAME=tfstates
-    STORAGE_ACCOUNT_NAME=tfstateunir
-    CONTAINER_NAME=unir
+RESOURCE_GROUP_NAME=tfstates
+STORAGE_ACCOUNT_NAME=tfstateunir
+CONTAINER_NAME=unir
 
-    az group create --name $RESOURCE_GROUP_NAME --location northeurope
-    az storage account create --resource-group $RESOURCE_GROUP_NAME --name $STORAGE_ACCOUNT_NAME --sku Standard_LRS --encryption-services blob
-    az storage container create --name $CONTAINER_NAME --account-name $STORAGE_ACCOUNT_NAME
+az group create --name $RESOURCE_GROUP_NAME --location northeurope
+az storage account create --resource-group $RESOURCE_GROUP_NAME --name $STORAGE_ACCOUNT_NAME --sku Standard_LRS --encryption-services blob
+az storage container create --name $CONTAINER_NAME --account-name $STORAGE_ACCOUNT_NAME
 
-``` python
+
+```
+
+```python
 +[dani@draco ~/Documents/asignaturas/unir/devops/actividades/act2/actividad2/IaC/terraform ](TF:default) $ bash -x setup.sh
 + RESOURCE_GROUP_NAME=tfstates
 + STORAGE_ACCOUNT_NAME=tfstateunir
@@ -248,75 +277,68 @@ In addition, setting the corresponding environment variables can avoid inputting
 {
   "created": true
 }
+
 ```
 
-![0fffcd5cf9d4cc9dd2778ad6035dc37d.png](_resources/0fffcd5cf9d4cc9dd2778ad6035dc37d.png)
+![0fffcd5cf9d4cc9dd2778ad6035dc37d.png](:/763383115b984214bbb1cadc7f24c346)
 
 ### Terraformación
 
 #### Preliminares
 
-El proceso de terraformación en Azure no es tan facil como en AWS. Hay
-que tener paciencia y tener en cuenta la naturaleza asíncrona de la
-creación de elementos, ya que estos no están disponibles.
+El proceso de terraformación en Azure no es tan facil como en AWS. Hay que tener paciencia y tener en cuenta la naturaleza asíncrona de la creación de elementos, ya que estos no se crean/destruyen tan rápido como en AWS.
 
-También se ha evitado el uso de módulos de terceras partes. Al contrario
-que con AWS
+También se ha evitado el uso de módulos de terceras partes. Al contrario que con AWS que utilizamos los modulos de la comunidad.
 
 #### Código terraform
 
-Para mayor legibilidad se ha separado el código en un fichero por
-recurso. Del mismo modo se han separado la definición de las variables y
-los valores de las variables en ficheros separados. Esto nos permite
-utilizar el mismo código para distintos entornos.
+Para mayor legibilidad se ha separado el código en un fichero por recurso. Del mismo modo se han separado la definición de las variables y los valores de las variables en ficheros separados. Esto nos permite utilizar el mismo código para distintos entornos.
 
-También se ha puesto énfasis en separar la configuración del código de
-tal forma que no se tenga que tocar el código para cambiar la
-configuración de un recurso.
+También se ha puesto énfasis en separar la configuración del código de tal forma que **no se tenga que tocar el código para cambiar la configuración de un recurso**.
 
-    .
-    ├── acr.tf
-    ├── aks.tf
-    ├── installer.tf
-    ├── locals.tf
-    ├── provider.tf
-    ├── resources
-    │   ├── ips.yaml
-    │   ├── scripts
-    │   │   ├── cloud-init.yml
-    │   │   └── webserver.sh
-    │   └── templates
-    │       ├── deployer_vars.tpl
-    │       ├── remote_inventory.tpl
-    │       └── remote_vars.tpl
-    ├── rg.tf
-    ├── setup.sh
-    ├── sg.tf
-    ├── terraform.tf
-    ├── terraform.tfstate
-    ├── terraform.tfstate.backup
-    ├── terraform.tfvars
-    ├── variables.tf
-    ├── vm.tf
-    └── vpc.tf
+```python
+.
+├── acr.tf
+├── aks.tf
+├── installer.tf
+├── locals.tf
+├── provider.tf
+├── resources
+│   ├── ips.yaml
+│   ├── scripts
+│   │   ├── cloud-init.yml
+│   │   └── webserver.sh
+│   └── templates
+│       ├── deployer_vars.tpl
+│       ├── remote_inventory.tpl
+│       └── remote_vars.tpl
+├── rg.tf
+├── setup.sh
+├── sg.tf
+├── terraform.tf
+├── terraform.tfstate
+├── terraform.tfstate.backup
+├── terraform.tfvars
+├── variables.tf
+├── vm.tf
+└── vpc.tf
 
-    4 directories, 22 files
+4 directories, 22 files
+
+
+```
 
 Casi todos los recursos utilizan el siguiente patron:
 
-    for_each = { for k, v in var.acr : k => v if v.enabled == true } #only enabled ones
+```
+for_each = { for k, v in var.acr : k => v if v.enabled == true } #only enabled ones
+```
 
-Esto se realiza a propósito para poder habilitar o deshabilitar recusos
-desde configuración, así como permitir una configuración más dinámica ya
-que los bloques de tipo `count` se indexan y son dependientes del orden
-de creación.
+Esto se realiza a propósito para poder habilitar o deshabilitar recusos desde configuración, así como permitir una configuración más dinámica ya que los bloques de tipo `count` se indexan y son dependientes del orden de creación.
 
-No se han hecho arcos de iglesia para gestionar la info a excepción de
-las reglas de seguridad que se ha utilizado una forma algo exótica para
-evitar colisiones en los nombres de las reglas y en la asignación de los
-prefijos de red de origen y destino.
+No se han hecho arcos de iglesia para gestionar la infraestructura, a excepción de las reglas de seguridad que se ha utilizado un código algo exótico para evitar colisiones en los nombres de las reglas y en la asignación de los prefijos de red de origen y destino.
 
-``` python
+```python
 resource "azurerm_network_security_rule" "nsgr" {
     # nsrg is a list
     # convert it to k => V
@@ -346,13 +368,14 @@ resource "azurerm_network_security_rule" "nsgr" {
   source_address_prefixes      = [each.value.sr] != "*" ? strcontains(each.value.sp, ".") ? tolist(split(", ", each.value.sp)) : ["${local.ip_map[each.value.sp]}/32"] : ["*"]
   destination_address_prefixes = [each.value.dr] != "*" ? strcontains(each.value.dp, ".") ? tolist(split(", ", each.value.dp)) : ["${local.ip_map[each.value.dp]}/32"] : ["*"]
 }
+
 ```
 
 #### Recusos creados
 
 A continuación se muestra nuestro plan
 
-``` python
+```python
 azurerm_resource_group.rgs["unir-arga2"]: Refreshing state... [id=/subscriptions/c190437f-864c-4fab-a46d-94b7dfc565d0/resourceGroups/unir-arga2]
 azurerm_subnet.snets["pub_snet_a"]: Refreshing state... [id=/subscriptions/c190437f-864c-4fab-a46d-94b7dfc565d0/resourceGroups/unir-arga2/providers/Microsoft.Network/virtualNetworks/unir_vpc/subnets/pub_snet_a]
 azurerm_nat_gateway.ngw["unir_ngw"]: Refreshing state... [id=/subscriptions/c190437f-864c-4fab-a46d-94b7dfc565d0/resourceGroups/unir-arga2/providers/Microsoft.Network/natGateways/unir_ngw]
@@ -382,19 +405,20 @@ No changes. Your infrastructure matches the configuration.
 
 OpenTofu has compared your real infrastructure against your configuration and
 found no differences, so no changes are needed.
+
 ```
 
-![06cb8cac07ce38900996e30ea7ac388d.png](_resources/06cb8cac07ce38900996e30ea7ac388d.png)
+![06cb8cac07ce38900996e30ea7ac388d.png](:/7e0c9f6ead1547eebada1aaed58fc258)
 
 El siguiente bloque de código muestra los recursos terraformados
 
-``` python
+```python
 # data.template_file.deployer_vars:
 data "template_file" "deployer_vars" {
     id       = "496bca6b34c223d249e4a496c93b35ad713364e5a7d956007228eb8f989f8048"
     rendered = <<-EOT
         registry:
-          admin_password: "ejoIdhByMjVGuC+DMoaBEANImo/bjUIvlvZDM7FM4n+ACRBvb1Xo"
+          admin_password: "YYYY"
           admin_username: "acrunir"
           source_repo: "registry.hub.docker.com/nginx:latest"
           source_img: "nginx:latest"
@@ -452,7 +476,7 @@ data "template_file" "remote_vars" {
           containerPath: /usr/share/nginx/html 
           
         registry:
-          admin_password: "ejoIdhByMjVGuC+DMoaBEANImo/bjUIvlvZDM7FM4n+ACRBvb1Xo"
+          admin_password: "YYYY"
           admin_username: "acrunir"
           source_repo: "registry.hub.docker.com/nginx:latest"
           source_img: "nginx:latest"
@@ -1029,7 +1053,7 @@ resource "azurerm_virtual_network" "vpc" {
 resource "local_file" "deployer_vars" {
     content              = <<-EOT
         registry:
-          admin_password: "ejoIdhByMjVGuC+DMoaBEANImo/bjUIvlvZDM7FM4n+ACRBvb1Xo"
+          admin_password: "YYYY"
           admin_username: "acrunir"
           source_repo: "registry.hub.docker.com/nginx:latest"
           source_img: "nginx:latest"
@@ -1081,7 +1105,7 @@ resource "local_file" "remote_vars" {
           containerPath: /usr/share/nginx/html 
           
         registry:
-          admin_password: "ejoIdhByMjVGuC+DMoaBEANImo/bjUIvlvZDM7FM4n+ACRBvb1Xo"
+          admin_password: "YYYY"
           admin_username: "acrunir"
           source_repo: "registry.hub.docker.com/nginx:latest"
           source_img: "nginx:latest"
@@ -1099,66 +1123,104 @@ resource "local_file" "remote_vars" {
     filename             = "../ansible/inventories/azure/group_vars/azure/main.yml"
     id                   = "7f184eeef05f491289681e4893638831c9e02a6a"
 }
+
+
 ```
 
-Y un claro diagrama para ilustrarlo
-todo `tofu graph -draw-cycles | dot -Tsvg > graph.svg`
+Y un claro diagrama para ilustrarlo todo `tofu graph -draw-cycles | dot -Tsvg > graph.svg`
 
-![c9a96a4c214a7aaf90060be24084dbe1.png](_resources/c9a96a4c214a7aaf90060be24084dbe1.png)
+![c9a96a4c214a7aaf90060be24084dbe1.png](:/5e9b72052c52433b843e296632d554a5)
 
 ## Configuración de la infra
 
 ### Preliminares
 
-Para la configuración automática de la infra de forma automática se ha
-decidido que sea el propio gestor de la infraestructura el que la
-configure. Es decir *Terraform* llamará a *Ansible*. Para ello se han
-pensado las dos siguientes alternativas
+Para la configuración automática de la infra de forma automática se ha decidido que sea el propio gestor de la infraestructura el que la configure. Es decir *Terraform* llamará a *Ansible*. Para ello se han pensado las dos siguientes alternativas
 
--   Usar un inventario dinámico de azure
--   Generar un inventario estático dinamicamente
+- Usar un inventario dinámico de azure
+- Generar un inventario estático dinamicamente
+
+#### Codigo Ansible
+
+La estructura general de la solución de *Ansible* es la estandar en estos casos. Se han creado dos inventarios uno para los recusos que se ejecutan desde el nodo instalador, local, y el remoto que se corresponde con la instancia creada en Azure.
+
+Se utilizan templates para dar un poco de dinamismo a la solución y parte de la configuración.
+
+```python
+├── aks.yml
+├── inventories
+│   ├── azure
+│   │   ├── group_vars
+│   │   │   └── azure
+│   │   │       └── main.yml
+│   │   └── hosts.yml
+│   └── local
+│       ├── group_vars
+│       │   └── local
+│       │       ├── k8s.yml
+│       │       └── main.yml
+│       └── hosts.yml
+├── registry.yml
+├── roles
+│   ├── acr
+│   │   ├── files
+│   │   │   ├── a.html
+│   │   │   └── Dockerfile
+│   │   └── tasks
+│   │       └── main.yml
+│   ├── aks
+│   │   ├── files
+│   │   │   ├── argocd
+│   │   │   │   ├── loadbalancer.yml
+│   │   │   │   └── namespace.yml
+│   │   │   ├── config.yml
+│   │   │   └── wp
+│   │   │       ├── mysql-deployment.yml
+│   │   │       ├── mysql-pvc.yml
+│   │   │       ├── mysql-service.yml
+│   │   │       ├── namespace.yml
+│   │   │       └── secret.yml
+│   │   ├── tasks
+│   │   │   ├── argocd.yml
+│   │   │   ├── main.yml
+│   │   │   └── wp.yml
+│   │   └── templates
+│   │       ├── mysql-deployment.yaml.j2
+│   │       ├── registry-credentials.yaml.j2
+│   │       └── wordpress-deployment.yaml.j2
+│   └── podman
+│       └── tasks
+│           └── main.yml
+└── tfnode.yml
+
+```
 
 #### Inventario dinámico
 
-Ansible tiene un plugin para el inventariado dinámico de de recursos en
-azure. La jugada sería una vez se ha creado la infra en *terraform*
-lanzar la ejecución del *playbook* de *ansible* utilizando este
-inventario dinámico
-`ansible-playbook tfnode.yml -i inventories/myazure_rm.yml`
+Ansible tiene un plugin para el inventariado dinámico de de recursos en azure. La jugada sería una vez se ha creado la infra en *terraform* lanzar la ejecución del *playbook* de *ansible* utilizando este inventario dinámico `ansible-playbook tfnode.yml -i inventories/myazure_rm.yml`
 
-El problema es que no hemos podido hacerlo funcionar experimentando los
-problemas que se describen en esta
-*[issue](https://github.com/ansible-collections/azure/issues/1067)* en
-*github*
+El problema es que no hemos podido hacerlo funcionar experimentando los problemas que se describen en esta *[issue](https://github.com/ansible-collections/azure/issues/1067)* en *github*
 
 #### Generar un inventario estático dinamicamente
 
-La jugada es un poco más artificiosa y consite en que terraform genere
-el inventario dinámicamente ya que genera las credenciales y conoce las
-ip para conectarse\
-En nuestro caso, se ha decidido no complicase mucho ya que script que se
-utiliza daba muchos problemas a la hora de realizar el registro contra
-*Azure* y generar el inventario.
+La jugada es un poco más artificiosa y consite en que terraform genere el inventario dinámicamente ya que genera las credenciales y conoce las ip para conectarse  
+En nuestro caso, se ha decidido no complicase mucho ya que script que se utiliza daba muchos problemas a la hora de realizar el registro contra *Azure* y generar el inventario.
 
 ### Configuración de la infra utilizando *Terraform* y *Ansible*
 
-El script de *terraform* *installer.tf* será el disparador del proceso
-de configuración del la infraestructura. Está estará dividida en varias
-fases
+El script de *terraform* *installer.tf* será el disparador del proceso de configuración del la infraestructura. Está estará dividida en varias fases
 
--   Configurar *ACR*
--   Configurar *WebServer*
--   Instalar *AKS*
+- Configurar *ACR*
+- Configurar *WebServer*
+- Instalar *AKS*
 
-Y hay que recalcar que provisionamos y configuramos nuestra
-infraestructura **automáticamente** sin intervención humana.
+Y hay que recalcar que provisionamos y configuramos nuestra infraestructura **automáticamente** sin intervención humana.
 
 #### Installer
 
-Simplemente utiliza una plantilla para generar el inventario de
-*Ansible* y ejecuta el *playbook*
+Simplemente utiliza una plantilla para generar el inventario de *Ansible* y ejecuta el *playbook*
 
-``` python
+```python
 data "template_file" "deployer_vars" {
   template = file("./resources/templates/deployer_vars.tpl")
   vars = {
@@ -1166,6 +1228,9 @@ data "template_file" "deployer_vars" {
     admin_username = azurerm_container_registry.acr["acr"].admin_username
     dest_repo      = azurerm_container_registry.acr["acr"].login_server
   }
+  depends_on = [
+    azurerm_container_registry.acr["acr"]
+  ]
 }
 
 resource "local_file" "deployer_vars" {
@@ -1176,7 +1241,14 @@ resource "local_file" "deployer_vars" {
     working_dir = "../ansible"
     command     = "ansible-playbook -v -i inventories/local/hosts.yml -u dani -b  registry.yml"
   }
+
+  depends_on = [
+    azurerm_container_registry.acr["acr"]
+  ]
+
 }
+
+
 
 data "template_file" "remote_vars" {
   template = file("./resources/templates/remote_vars.tpl")
@@ -1187,15 +1259,33 @@ data "template_file" "remote_vars" {
   }
 }
 
+
 resource "local_file" "remote_vars" {
   content  = data.template_file.remote_vars.rendered
   filename = "../ansible/inventories/azure/group_vars/azure/main.yml"
+
+  depends_on = [
+    local_file.deployer_vars,
+    azurerm_linux_virtual_machine.vms["webserver"],
+    azurerm_public_ip.pub_ip["webserver"]
+
+  ]
 }
+
+
 data "template_file" "remote_inventory" {
+  #"azurerm_linux_virtual_machine" "vms"
+
+  #azurerm_public_ip.pub_ip["webserver"]
   template = file("./resources/templates/remote_inventory.tpl")
   vars = {
     tfhost = azurerm_public_ip.pub_ip["webserver"].ip_address
   }
+  depends_on = [
+    azurerm_linux_virtual_machine.vms["webserver"],
+    azurerm_public_ip.pub_ip["webserver"]
+  ]
+
 }
 
 resource "local_file" "remote_inventory" {
@@ -1206,81 +1296,100 @@ resource "local_file" "remote_inventory" {
     working_dir = "../ansible"
     command     = "ansible-playbook -v -i inventories/azure/hosts.yml -u ubuntu  tfnode.yml"
   }
+  depends_on = [
+    local_file.deployer_vars,
+    azurerm_linux_virtual_machine.vms["webserver"],
+    azurerm_public_ip.pub_ip["webserver"]
+
+  ]
+
 }
+
+resource "local_file" "k8s_config" {
+  content  = azurerm_kubernetes_cluster.aks["aks"].kube_config_raw
+  filename = "../ansible/roles/aks/files/config.yml"
+
+  provisioner "local-exec" {
+    working_dir = "../ansible"
+    command     = "ansible-playbook -v -i inventories/local/hosts.yml -u dani aks.yml"
+  }
+  depends_on = [
+    azurerm_kubernetes_cluster.aks["aks"]
+  ]
+}
+
 ```
 
 #### Configuración del *ACR*
 
-Este es digamos el primer paso de la configuración. En el desplegamos
-una imagen *Docker* a nuestro repositorio *ACR*. La imagen *Docker* no
-es más que un *Nginx* con un fichero *HTML* personalizado.
+Este es digamos el primer paso de la configuración. En el desplegamos una imagen *Docker* a nuestro repositorio *ACR*. La imagen *Docker* no es más que un *Nginx* con un fichero *HTML* personalizado.
 
-Nuestro *Dockerfile* se ha reducido a la mínima expresión mostrandose a
-continuación
+Nuestro *Dockerfile* se ha reducido a la mínima expresión mostrandose a continuación
 
-``` go
+```go
 FROM nginx:latest
 COPY a.html /usr/share/nginx/html
 ```
 
 El orden de ejecución es el siguiente
 
-1.  El plan de*Terraform* genera la configuración de *Ansible* para
-    nuestro *playbook*
-2.  El plan de *Terraform* ejecuta en **local** el *playbook* de
-    *Ansible*.
+1.  El plan de*Terraform* genera la configuración de *Ansible* para nuestro *playbook*
+2.  El plan de *Terraform* ejecuta en **local** el *playbook* de *Ansible*.
 3.  El playbook ejecuta las siguientes acciones
     1.  Registrase en ACR
     2.  Construir la imagen y subirla al ACR
 
-La plantilla que utilizará *Terrform* para generar la configuración se
-muestran a continuación.
+La plantilla que utilizará *Terrform* para generar la configuración se muestran a continuación.
 
-    registry:
-      admin_password: "${admin_password}"
-      admin_username: "${admin_username}"
-      source_repo: "registry.hub.docker.com/nginx:latest"
-      source_img: "nginx:latest"
-      dest_repo: "${dest_repo}"
-      dest_img: "nginx:latest"
+```
+registry:
+  admin_password: "${admin_password}"
+  admin_username: "${admin_username}"
+  source_repo: "registry.hub.docker.com/nginx:latest"
+  source_img: "nginx:latest"
+  dest_repo: "${dest_repo}"
+  dest_img: "nginx:latest"
+```
 
 Que luego genera en *Ansible* la siguiente estructura
 
-    {
-        "_meta": {
-            "hostvars": {
-                "localhost": {
-                    "ansible_connection": "local",
-                    "ansible_host": "localhost",
-                    "ansible_port": 22,
-                    "registry": {
-                        "admin_password": "YYYY",
-                        "admin_username": "XXXX",
-                        "dest_img": "nginx:latest",
-                        "dest_repo": "acrunir.azurecr.io",
-                        "source_img": "nginx:latest",
-                        "source_repo": "registry.hub.docker.com/nginx:latest"
-                    }
+```
+{
+    "_meta": {
+        "hostvars": {
+            "localhost": {
+                "ansible_connection": "local",
+                "ansible_host": "localhost",
+                "ansible_port": 22,
+                "registry": {
+                    "admin_password": "YYYY",
+                    "admin_username": "XXXX",
+                    "dest_img": "nginx:latest",
+                    "dest_repo": "acrunir.azurecr.io",
+                    "source_img": "nginx:latest",
+                    "source_repo": "registry.hub.docker.com/nginx:latest"
                 }
             }
-        },
-        "all": {
-            "children": [
-                "ungrouped",
-                "local"
-            ]
-        },
-        "local": {
-            "hosts": [
-                "localhost"
-            ]
         }
+    },
+    "all": {
+        "children": [
+            "ungrouped",
+            "local"
+        ]
+    },
+    "local": {
+        "hosts": [
+            "localhost"
+        ]
     }
+}
 
-Una vez generada la configuración, el siguiente paso es ejecutar el
-*playbook* de *Ansible* que se muestra a continuación
+```
 
-``` yaml
+Una vez generada la configuración, el siguiente paso es ejecutar el *playbook* de *Ansible* que se muestra a continuación
+
+```yaml
 - name: Log into private registry and force re-authorization
   docker_login:
     registry: "{{ registry.dest_repo }}"
@@ -1299,16 +1408,15 @@ Una vez generada la configuración, el siguiente paso es ejecutar el
 
 Las imágenes siguientes muestran nuestro *ACR* montado y configurado
 
-![c94c9178778e84e01b1bfd4e39766870.png](_resources/c94c9178778e84e01b1bfd4e39766870.png)
+![c94c9178778e84e01b1bfd4e39766870.png](:/1899deebf6b942a5897ba0e67ed37f48)
+![a073bbd743eb3e40e7c6fc95a238070f.png](:/1238b83d71a8479d941da15170f40e2a)
 
-La imagen de nginx generada\
-![f8f1f791303f7511cabeb3f271c859c7.png](_resources/f8f1f791303f7511cabeb3f271c859c7.png)
+La imagen de nginx generada  
+![f8f1f791303f7511cabeb3f271c859c7.png](:/f0be3172153a44da909468cc59871742)
 
 #### Configuración del *WebServer*
 
-La configuración del servidor web se realiza mediante *Ansible* desde un
-plan de Terrform, que primero genera el inventario y luego ejecuta el
-comando de *Ansible*.
+La configuración del servidor web se realiza mediante *Ansible* desde un plan de Terrform, que primero genera el inventario y luego ejecuta el comando de *Ansible*.
 
 El orden de ejecución es el siguiente
 
@@ -1323,7 +1431,7 @@ El orden de ejecución es el siguiente
 
 En nuestro caso la plantilla del inventario es muy sencilla.
 
-``` yaml
+```yaml
 azure:
   hosts:
     tfnode:
@@ -1331,10 +1439,9 @@ azure:
      ansible_port: 22
 ```
 
-Una vez se ejecuta el plan de *Terraform* se genera automáticamente una
-inventario en *Ansible* con la siguiente estructura.
+Una vez se ejecuta el plan de *Terraform* se genera automáticamente una inventario en *Ansible* con la siguiente estructura.
 
-``` json
+```json
 {
     "_meta": {
         "hostvars": {
@@ -1372,12 +1479,12 @@ inventario en *Ansible* con la siguiente estructura.
         ]
     }
 }
+
 ```
 
-Siendo nuestro rol de *Ansible* para crear nuestro servidor web el
-siguiente
+Siendo nuestro rol de *Ansible* para crear nuestro servidor web el siguiente
 
-``` yaml
+```yaml
 - name: Update packages
   become: true
   apt:
@@ -1451,7 +1558,7 @@ siguiente
 
 ### Salida de la ejecución de la configuración
 
-``` python
+```python
 azurerm_resource_group.rgs["unir-arga2"]: Refreshing state... [id=/subscriptions/c190437f-864c-4fab-a46d-94b7dfc565d0/resourceGroups/unir-arga2]
 azurerm_subnet.snets["pub_snet_a"]: Refreshing state... [id=/subscriptions/c190437f-864c-4fab-a46d-94b7dfc565d0/resourceGroups/unir-arga2/providers/Microsoft.Network/virtualNetworks/unir_vpc/subnets/pub_snet_a]
 azurerm_network_security_rule.nsgr["allow_ssh_public"]: Refreshing state... [id=/subscriptions/c190437f-864c-4fab-a46d-94b7dfc565d0/resourceGroups/unir-arga2/providers/Microsoft.Network/networkSecurityGroups/public/securityRules/allow_ssh_public]
@@ -1705,23 +1812,19 @@ local_file.remote_inventory: Creation complete after 22s [id=e4bbeb1c88df65ca55f
 
 
 Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
+
 ```
 
-La siguiente imagen muestra el acceso a nuestro servidor web\
-![163074062bf96ff428b9374692a9b949.png](_resources/163074062bf96ff428b9374692a9b949.png)
+La siguiente imagen muestra el acceso a nuestro servidor web  
+![163074062bf96ff428b9374692a9b949.png](:/7f26dffeffd646b3a1b4e69f131fb68e)
 
 ### Configurción de AKS utilizando Terraform y Ansible
 
-Para esta practica utilizaremos el enfoque que venimos usando.
-*Terraform* crea la infraestructura y *Ansible* la configura. Cierto es
-que para *K8S* este enfoque no parece el adecuado. Quizás usando *HELM*
-y alguna herrmienta de CICD específica como *ARGOCD* o *Flux CD* sería
-una solución más robusta y menos artesanal.
+Para esta practica utilizaremos el enfoque que venimos usando. *Terraform* crea la infraestructura y *Ansible* la configura. Cierto es que para *K8S* este enfoque no parece el adecuado. Quizás usando *HELM* y alguna herrmienta de CICD específica como *ARGOCD* o *Flux CD* sería una solución más robusta y menos artesanal.
 
-Justo después de crear nuestro cluster de *K8S*. De esta forma podemo
-sin intervención humana desplegar las aplicaciones que nos interese
+Justo después de crear nuestro cluster de *K8S*. De esta forma podemo sin intervención humana desplegar las aplicaciones que nos interese
 
-``` python
+```python
 resource "azurerm_kubernetes_cluster" "aks" {
   for_each = { for k, v in var.aks : k => v if v.enabled == true } #only enabled ones
 
@@ -1761,25 +1864,26 @@ resource "azurerm_kubernetes_cluster" "aks" {
 }
 ```
 
-En el instaler creamos un recurso que genera la configuración de acceso
-a nuestro cluster
+En el instaler creamos un recurso que genera la configuración de acceso a nuestro cluster
 
-    resource "local_file" "k8s_config" {
-      content  = azurerm_kubernetes_cluster.aks["aks"].kube_config_raw
-      filename = "../ansible/roles/aks/files/config.yml"
+```
+resource "local_file" "k8s_config" {
+  content  = azurerm_kubernetes_cluster.aks["aks"].kube_config_raw
+  filename = "../ansible/roles/aks/files/config.yml"
 
-      provisioner "local-exec" {
-        working_dir = "../ansible"
-        command     = "ansible-playbook -v -i inventories/local/hosts.yml -u dani aks.yml"
-      }
-      depends_on = [
-        azurerm_kubernetes_cluster.aks["aks"]
-      ]
-    }
+  provisioner "local-exec" {
+    working_dir = "../ansible"
+    command     = "ansible-playbook -v -i inventories/local/hosts.yml -u dani aks.yml"
+  }
+  depends_on = [
+    azurerm_kubernetes_cluster.aks["aks"]
+  ]
+}
+```
 
 Y ejecuta nuestro rol, la salida se puede ver a continuación.
 
-``` python
+```python
 local_file.k8s_config: Destroying... [id=eed0e4f705bb1088635b29adaecb21b00b3a4c08]
 local_file.k8s_config: Destruction complete after 0s
 local_file.k8s_config: Creating...
@@ -2799,24 +2903,22 @@ local_file.k8s_config (local-exec): localhost                  : ok=8    changed
 local_file.k8s_config: Creation complete after 12s [id=eed0e4f705bb1088635b29adaecb21b00b3a4c08]
 
 Apply complete! Resources: 1 added, 0 changed, 1 destroyed.
+
 ```
 
 ## K8S
 
-La aplicación que vamos desplear para probar *K8S* un Wordpress. En esta
-app probaremos
+La aplicación que vamos desplear para probar *K8S* un Wordpress. En esta app probaremos
 
--   Funcionamiento de general AKS
--   Acceso público mediante un *Service* de tipo *LoadBalancer*
--   Persistencia del *Deployment* vía *PersistentVolume*
+- Funcionamiento de general AKS
+- Acceso público mediante un *Service* de tipo *LoadBalancer*
+- Persistencia del *Deployment* vía *PersistentVolume*
 
 ### Imágenes
 
-Las imágenes están presentes ya en nuestro *Registry*, al no haber un
-rol específico para hacer *mirror* de *registry* se ha preferido hacerlo
-así
+Las imágenes están presentes ya en nuestro *Registry*, al no haber un rol específico para hacer *mirror* de *registry* se ha preferido hacerlo así
 
-``` bash
+```bash
 skopeo copy --dest-username acrunir --dest-password "XXXX" docker://docker.io/mysql:8.0 docker://acrunir.azurecr.io/mysql:8.0
 Getting image source signatures
 Copying blob d9a40b27c30f done   |
@@ -2836,36 +2938,38 @@ Writing manifest to image destination
 
 ### Secretos
 
-Hay que acordarse de añadir la propiedad *imagePullSecrets* a nuestro
-deployment sino los contenedores de los *Pods* no se descargarán
+Hay que acordarse de añadir la propiedad *imagePullSecrets* a nuestro deployment sino los contenedores de los *Pods* no se descargarán
 
-    vents:
-      Type     Reason                  Age                   From                     Message
-      ----     ------                  ----                  ----                     -------
-      Normal   Scheduled               57m                   default-scheduler        Successfully assigned wp/wordpress-555c954d89-4bc75 to aks-default-12959642-vmss000000
-      Normal   SuccessfulAttachVolume  57m                   attachdetach-controller  AttachVolume.Attach succeeded for volume "pvc-568acbcc-d6d7-4c81-8a00-d6c9398377af"
-      Normal   Pulling                 55m (x4 over 57m)     kubelet                  Pulling image "acrunir.azurecr.io/wordpress:6.2.1-apache"
-      Warning  Failed                  55m (x4 over 57m)     kubelet                  Failed to pull image "acrunir.azurecr.io/wordpress:6.2.1-apache": failed to pull and unpack image "acrunir.azurecr.io/wordpress:6.2.1-apache": failed to resolve reference "acrunir.azurecr.io/wordpress:6.2.1-apache": failed to authorize: failed to fetch anonymous token: unexpected status from GET request to https://acrunir.azurecr.io/oauth2/token?scope=repository%3Awordpress%3Apull&service=acrunir.azurecr.io: 401 Unauthorized
-      Warning  Failed                  55m (x4 over 57m)     kubelet                  Error: ErrImagePull
-      Warning  Failed                  55m (x6 over 57m)     kubelet                  Error: ImagePullBackOff
-      Normal   BackOff                 2m7s (x244 over 57m)  kubelet                  Back-off pulling image "acrunir.azurecr.io/wordpress:6.2.1-apache"
+```
+vents:
+  Type     Reason                  Age                   From                     Message
+  ----     ------                  ----                  ----                     -------
+  Normal   Scheduled               57m                   default-scheduler        Successfully assigned wp/wordpress-555c954d89-4bc75 to aks-default-12959642-vmss000000
+  Normal   SuccessfulAttachVolume  57m                   attachdetach-controller  AttachVolume.Attach succeeded for volume "pvc-568acbcc-d6d7-4c81-8a00-d6c9398377af"
+  Normal   Pulling                 55m (x4 over 57m)     kubelet                  Pulling image "acrunir.azurecr.io/wordpress:6.2.1-apache"
+  Warning  Failed                  55m (x4 over 57m)     kubelet                  Failed to pull image "acrunir.azurecr.io/wordpress:6.2.1-apache": failed to pull and unpack image "acrunir.azurecr.io/wordpress:6.2.1-apache": failed to resolve reference "acrunir.azurecr.io/wordpress:6.2.1-apache": failed to authorize: failed to fetch anonymous token: unexpected status from GET request to https://acrunir.azurecr.io/oauth2/token?scope=repository%3Awordpress%3Apull&service=acrunir.azurecr.io: 401 Unauthorized
+  Warning  Failed                  55m (x4 over 57m)     kubelet                  Error: ErrImagePull
+  Warning  Failed                  55m (x6 over 57m)     kubelet                  Error: ImagePullBackOff
+  Normal   BackOff                 2m7s (x244 over 57m)  kubelet                  Back-off pulling image "acrunir.azurecr.io/wordpress:6.2.1-apache"
+```
 
-Para ello hay que crear un secret en el *namespace* de *k8s* análogo a
-este
+Para ello hay que crear un secret en el *namespace* de *k8s* análogo a este
 
-    apiVersion: v1
-    kind: Secret
-    metadata:
-      name: registry-credentials
-      namespace: intelygenz-prod
-    type: kubernetes.io/dockerconfigjson
-    data:
-      .dockerconfigjson: |
-        BASE64DATA0000111122223333444455556666777788889999AAABBCCDDDEEFFF
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: registry-credentials
+  namespace: intelygenz-prod
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: |
+    BASE64DATA0000111122223333444455556666777788889999AAABBCCDDDEEFFF
+```
 
 Una vez creado y subido
 
-``` bash
+```bash
 $ kubectl get all -n wp
 NAME                                   READY   STATUS    RESTARTS   AGE
 pod/wordpress-7bbdcb465-5gj27          1/1     Running   0          116s
@@ -2888,7 +2992,7 @@ replicaset.apps/wordpress-mysql-864bdc5c56   1         1         1       117s
 replicaset.apps/wordpress-mysql-d74dd94bf    0         0         0       3h37m
 ```
 
-``` bash
+```bash
 $ kubectl describe pod/wordpress-7bbdcb465-5gj27 -n wp
 Name:             wordpress-7bbdcb465-5gj27
 Namespace:        wp
@@ -2954,88 +3058,88 @@ Events:
   Normal  Started    2m58s  kubelet            Started container wordpress
 ```
 
-    $ kubectl describe pod/wordpress-mysql-864bdc5c56-tqtpq -n wp
+```
+$ kubectl describe pod/wordpress-mysql-864bdc5c56-tqtpq -n wp
 
-    Name:             wordpress-mysql-864bdc5c56-tqtpq
-    Namespace:        wp
-    Priority:         0
-    Service Account:  default
-    Node:             aks-default-12959642-vmss000000/10.224.0.4
-    Start Time:       Tue, 16 Jul 2024 11:53:11 +0200
-    Labels:           app=wordpress
-                      pod-template-hash=864bdc5c56
-                      tier=mysql
-    Annotations:      <none>
-    Status:           Running
-    IP:               10.244.0.65
-    IPs:
-      IP:           10.244.0.65
-    Controlled By:  ReplicaSet/wordpress-mysql-864bdc5c56
-    Containers:
-      mysql:
-        Container ID:   containerd://e50fd65734e15dddc9fd500e50ae101b66b4340463ac60e1d0b8755a0c083406
-        Image:          acrunir.azurecr.io/mysql:8.0
-        Image ID:       acrunir.azurecr.io/mysql@sha256:5c8c4d6722f3cb66ab34ebb70a87c80f0d3dffc64324180e416d90bd57e2878f
-        Port:           3306/TCP
-        Host Port:      0/TCP
-        State:          Running
-          Started:      Tue, 16 Jul 2024 11:53:20 +0200
-        Ready:          True
-        Restart Count:  0
-        Environment:
-          MYSQL_ROOT_PASSWORD:  pepe
-          MYSQL_DATABASE:       wordpress
-          MYSQL_USER:           wordpress
-          MYSQL_PASSWORD:       pepe
-        Mounts:
-          /var/lib/mysql from mysql-persistent-storage (rw)
-          /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-df7zv (ro)
-    Conditions:
-      Type              Status
-      Initialized       True
-      Ready             True
-      ContainersReady   True
-      PodScheduled      True
-    Volumes:
-      mysql-persistent-storage:
-        Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
-        ClaimName:  mysql-pv-claim
-        ReadOnly:   false
-      kube-api-access-df7zv:
-        Type:                    Projected (a volume that contains injected data from multiple sources)
-        TokenExpirationSeconds:  3607
-        ConfigMapName:           kube-root-ca.crt
-        ConfigMapOptional:       <nil>
-        DownwardAPI:             true
-    QoS Class:                   BestEffort
-    Node-Selectors:              <none>
-    Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-    Events:
-      Type    Reason     Age    From               Message
-      ----    ------     ----   ----               -------
-      Normal  Scheduled  4m4s   default-scheduler  Successfully assigned wp/wordpress-mysql-864bdc5c56-tqtpq to aks-default-12959642-vmss000000
-      Normal  Pulling    3m56s  kubelet            Pulling image "acrunir.azurecr.io/mysql:8.0"
-      Normal  Pulled     3m56s  kubelet            Successfully pulled image "acrunir.azurecr.io/mysql:8.0" in 498ms (498ms including waiting)
-      Normal  Created    3m55s  kubelet            Created container mysql
-      Normal  Started    3m55s  kubelet            Started container mysql
+Name:             wordpress-mysql-864bdc5c56-tqtpq
+Namespace:        wp
+Priority:         0
+Service Account:  default
+Node:             aks-default-12959642-vmss000000/10.224.0.4
+Start Time:       Tue, 16 Jul 2024 11:53:11 +0200
+Labels:           app=wordpress
+                  pod-template-hash=864bdc5c56
+                  tier=mysql
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.65
+IPs:
+  IP:           10.244.0.65
+Controlled By:  ReplicaSet/wordpress-mysql-864bdc5c56
+Containers:
+  mysql:
+    Container ID:   containerd://e50fd65734e15dddc9fd500e50ae101b66b4340463ac60e1d0b8755a0c083406
+    Image:          acrunir.azurecr.io/mysql:8.0
+    Image ID:       acrunir.azurecr.io/mysql@sha256:5c8c4d6722f3cb66ab34ebb70a87c80f0d3dffc64324180e416d90bd57e2878f
+    Port:           3306/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Tue, 16 Jul 2024 11:53:20 +0200
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      MYSQL_ROOT_PASSWORD:  pepe
+      MYSQL_DATABASE:       wordpress
+      MYSQL_USER:           wordpress
+      MYSQL_PASSWORD:       pepe
+    Mounts:
+      /var/lib/mysql from mysql-persistent-storage (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-df7zv (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             True
+  ContainersReady   True
+  PodScheduled      True
+Volumes:
+  mysql-persistent-storage:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  mysql-pv-claim
+    ReadOnly:   false
+  kube-api-access-df7zv:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  4m4s   default-scheduler  Successfully assigned wp/wordpress-mysql-864bdc5c56-tqtpq to aks-default-12959642-vmss000000
+  Normal  Pulling    3m56s  kubelet            Pulling image "acrunir.azurecr.io/mysql:8.0"
+  Normal  Pulled     3m56s  kubelet            Successfully pulled image "acrunir.azurecr.io/mysql:8.0" in 498ms (498ms including waiting)
+  Normal  Created    3m55s  kubelet            Created container mysql
+  Normal  Started    3m55s  kubelet            Started container mysql
+```
 
 ### Manifiestos
 
-Los manifiestos de esta aplicación están separados en dos capas,
-*tiers*.
+Los manifiestos de esta aplicación están separados en dos capas, *tiers*.
 
--   *Frontent*
--   *MySQL*\
-    Para poder dinamizarlos se han convertido a una plantilla, vale que
-    se podría hacer con HELM, pero ahora no me da la vida.\
+- *Frontent*
+- *MySQL*  
+    Para poder dinamizarlos se han convertido a una plantilla, vale que se podría hacer con HELM, pero ahora no me da la vida.  
     A continuación se muestran desglosados
 
 #### Frontend
 
 Se crea un *service* de tipo *loadBalancer* escuchando en el puerto 80
 
-``` yaml
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -3053,7 +3157,7 @@ spec:
 
 Se crea un *Claim* de 2GB para la capa front
 
-``` yaml
+```yaml
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -3070,10 +3174,9 @@ spec:
 ---
 ```
 
-El service define las características de la aplicación *front* configura
-los volumenes y los parámetros de la DB
+El service define las características de la aplicación *front* configura los volumenes y los parámetros de la DB
 
-``` yaml
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -3119,95 +3222,98 @@ spec:
 
 #### Mysql
 
-El *Service* creadp en este caso es un ClusterIp, para comunicarse solo
-via local en el *namespace*
+El *Service* creadp en este caso es un ClusterIp, para comunicarse solo via local en el *namespace*
 
-    apiVersion: v1
-    kind: Service
-    metadata:
-      name: wordpress-mysql
-      labels:
-        app: wordpress
-    spec:
-      ports:
-        - port: 3306
-      selector:
-        app: wordpress
-        tier: mysql
-      clusterIP: None
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-mysql
+  labels:
+    app: wordpress
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: wordpress
+    tier: mysql
+  clusterIP: None
+```
 
 La capa de persistencia en este caso es mayor unos 20Gi
 
-    ---
-    apiVersion: v1
-    kind: PersistentVolumeClaim
+```
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  labels:
+    app: wordpress
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+```
+
+El despliegue de la MySQL, no presenta gran complejidad, solo se definen los volúmenes y las variables de entorno para configurar la mysql.
+
+```
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-mysql
+  labels:
+    app: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
     metadata:
-      name: mysql-pv-claim
       labels:
         app: wordpress
+        tier: mysql
     spec:
-      accessModes:
-        - ReadWriteOnce
-      resources:
-        requests:
-          storage: 20Gi
-
-El despliegue de la MySQL, no presenta gran complejidad, solo se definen
-los volúmenes y las variables de entorno para configurar la mysql.
-
-    ---
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: wordpress-mysql
-      labels:
-        app: wordpress
-    spec:
-      selector:
-        matchLabels:
-          app: wordpress
-          tier: mysql
-      strategy:
-        type: Recreate
-      template:
-        metadata:
-          labels:
-            app: wordpress
-            tier: mysql
-        spec:
-          containers:
-          - image: "{{ aks.mysql.image }}"
-            name: mysql
-            env:
-            - name: MYSQL_ROOT_PASSWORD
-              value: "{{ aks.mysql.password }}" 
-            - name: MYSQL_DATABASE
-              value: wordpress
-            - name: MYSQL_USER
-              value: wordpress
-            - name: MYSQL_PASSWORD
-              value: "{{ aks.mysql.password }}" 
-            ports:
-            - containerPort: 3306
-              name: mysql
-            volumeMounts:
-            - name: mysql-persistent-storage
-              mountPath: /var/lib/mysql
-          imagePullSecrets:
-            - name: registry-credentials
-          volumes:
-          - name: mysql-persistent-storage
-            persistentVolumeClaim:
-              claimName: mysql-pv-claim
+      containers:
+      - image: "{{ aks.mysql.image }}"
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "{{ aks.mysql.password }}" 
+        - name: MYSQL_DATABASE
+          value: wordpress
+        - name: MYSQL_USER
+          value: wordpress
+        - name: MYSQL_PASSWORD
+          value: "{{ aks.mysql.password }}" 
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      imagePullSecrets:
+        - name: registry-credentials
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+```
 
 ### Problemas:
 
 #### Límite de ips públicas de la cuenta
 
-La cuenta tiene una limitación de 3 ips públicas con lo cual nuestro
-*Service* no puede levantarse correctamente
+La cuenta tiene una limitación de 3 ips públicas con lo cual nuestro *Service* no puede levantarse correctamente
 
-``` bash
+```bash
 $ kubectl describe service/wordpress -n wp
 Name:                     wordpress
 Namespace:                wp
@@ -3245,53 +3351,294 @@ Events:
 }
 ```
 
-![e878704f05e4bdbf2720a69438664b93.png](_resources/e878704f05e4bdbf2720a69438664b93.png)
+![e878704f05e4bdbf2720a69438664b93.png](:/0d1c5866e0044a048f8331892e9039fe)
 
 ### Soluciones:
 
 #### Límite de ips públicas de la cuenta
 
-Para hacer pruebas se puede hacer un port-forwarding desde nuestro local
-al nodo
+Para hacer pruebas se puede hacer un port-forwarding desde nuestro local al nodo
 
-    kubectl port-forward service/wordpress -n wp 1234:80
-    Forwarding from 127.0.0.1:1234 -> 80
-    Handling connection for 1234> 80
-    Handling connection for 1234
-    Handling connection for 1234
-    Handling connection for 1234
-    Handling connection for 1234
+```
+kubectl port-forward service/wordpress -n wp 1234:80
+Forwarding from 127.0.0.1:1234 -> 80
+Handling connection for 1234> 80
+Handling connection for 1234
+Handling connection for 1234
+Handling connection for 1234
+Handling connection for 1234
 
-![d4193fcfade1cc4425abe8a91e3c9f2f.png](_resources/d4193fcfade1cc4425abe8a91e3c9f2f.png)
+```
+
+![d4193fcfade1cc4425abe8a91e3c9f2f.png](:/83ba2334066247e4a8413f18fca73451)
 
 O eliminar las ips sobrantes y redesplegar
 
-![c92a862d3a1b08a36d92770963196917.png](_resources/c92a862d3a1b08a36d92770963196917.png)
+![c92a862d3a1b08a36d92770963196917.png](:/1374d595249f49de8d6c00dfdabc0baf)
 
 ### User tests
 
-Una vez solucionados los problemas con las ips, podemos acceder a
-nuestro *Wordpress* y probar la persistencia.
+Una vez solucionados los problemas con las ips, podemos acceder a nuestro *Wordpress* y probar la persistencia.
 
--   Accedemos a nuestro *service* público\
-    ![bdb4d1f6969a8b0906918c01b71a90ec.png](_resources/bdb4d1f6969a8b0906918c01b71a90ec.png)
+- Accedemos a nuestro *service* público  
+    ![bdb4d1f6969a8b0906918c01b71a90ec.png](:/4ba4f2e6bd0c4a2fa478d899868e2c72)
+    
+- Configuracmos la instancia de *WP*  
+    ![ab781f16c99468929d3c848dbddb9a44.png](:/8daa8d196301455c8032bae87adc4c99)
+    
+- Comprobamos que se crea un post de ejemplo.  
+    ![cb8faafc99d91be7524b2c6f61b2d086.png](:/96a0fe6399e2486591237c4f0cb69169)
+    
+- Eliminamos la base de datos.
+    
 
--   Configuracmos la instancia de *WP*\
-    ![ab781f16c99468929d3c848dbddb9a44.png](_resources/ab781f16c99468929d3c848dbddb9a44.png)
+```
+$ kubectl delete deployment.apps/wordpress-mysql -n wp
+deployment.apps "wordpress-mysql" deleted
 
--   Comprobamos que se crea un post de ejemplo.\
-    ![cb8faafc99d91be7524b2c6f61b2d086.png](_resources/cb8faafc99d91be7524b2c6f61b2d086.png)
+```
 
--   Eliminamos la base de datos.
+![155148f997e03ce95f4b5ade59a1800e.png](:/e72bb62557544733b855729807a45a45)
 
-<!-- -->
+- Redesplegamos  
+    ![439f84aef382c3b11516471ad16507d5.png](:/05c69cc30b9849c2b22c9962a4aad6ec)  
+    Nuestro *WP* está en el mismo estado  
+    ![11f797b04f48e13854398b9243afe1d7.png](:/8008672e54c04c5c979763131e68a5f7)
 
-    $ kubectl delete deployment.apps/wordpress-mysql -n wp
-    deployment.apps "wordpress-mysql" deleted
+# Otras actividades no evaluables
 
-![155148f997e03ce95f4b5ade59a1800e.png](_resources/155148f997e03ce95f4b5ade59a1800e.png)
+Ya que se han hablado en el curso, vamos a probar un *pipeline* de despliegue continuo con *ArgoCD* y *Tekton*, aunque tektton no he podido probarlo.
 
--   Redesplegamos\
-    ![439f84aef382c3b11516471ad16507d5.png](_resources/439f84aef382c3b11516471ad16507d5.png)\
-    Nuestro *WP* está en el mismo estado\
-    ![11f797b04f48e13854398b9243afe1d7.png](_resources/11f797b04f48e13854398b9243afe1d7.png)
+## ArgoCD
+
+### Instalación
+
+No es complicada, solo hay que crear el *namespace* y utilzar su manifiesto.
+
+- Creamos el *namespace* e instalamos *ArgoCD*
+
+```BASH
+$ kubectl create ns argocd
+namespace/argocd created
+
+$ kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/v2.9.18/manifests/install.yaml -n argocd
+customresourcedefinition.apiextensions.k8s.io/applications.argoproj.io created
+customresourcedefinition.apiextensions.k8s.io/applicationsets.argoproj.io created
+customresourcedefinition.apiextensions.k8s.io/appprojects.argoproj.io created
+serviceaccount/argocd-application-controller created
+serviceaccount/argocd-applicationset-controller created
+serviceaccount/argocd-dex-server created
+serviceaccount/argocd-notifications-controller created
+serviceaccount/argocd-redis created
+serviceaccount/argocd-repo-server created
+serviceaccount/argocd-server created
+role.rbac.authorization.k8s.io/argocd-application-controller created
+role.rbac.authorization.k8s.io/argocd-applicationset-controller created
+role.rbac.authorization.k8s.io/argocd-dex-server created
+role.rbac.authorization.k8s.io/argocd-notifications-controller created
+role.rbac.authorization.k8s.io/argocd-redis created
+role.rbac.authorization.k8s.io/argocd-server created
+clusterrole.rbac.authorization.k8s.io/argocd-application-controller created
+clusterrole.rbac.authorization.k8s.io/argocd-server created
+rolebinding.rbac.authorization.k8s.io/argocd-application-controller created
+rolebinding.rbac.authorization.k8s.io/argocd-applicationset-controller created
+rolebinding.rbac.authorization.k8s.io/argocd-dex-server created
+rolebinding.rbac.authorization.k8s.io/argocd-notifications-controller created
+rolebinding.rbac.authorization.k8s.io/argocd-redis created
+rolebinding.rbac.authorization.k8s.io/argocd-server created
+clusterrolebinding.rbac.authorization.k8s.io/argocd-application-controller created
+clusterrolebinding.rbac.authorization.k8s.io/argocd-server created
+configmap/argocd-cm created
+configmap/argocd-cmd-params-cm created
+configmap/argocd-gpg-keys-cm created
+configmap/argocd-notifications-cm created
+configmap/argocd-rbac-cm created
+configmap/argocd-ssh-known-hosts-cm created
+configmap/argocd-tls-certs-cm created
+secret/argocd-notifications-secret created
+secret/argocd-secret created
+service/argocd-applicationset-controller created
+service/argocd-dex-server created
+service/argocd-metrics created
+service/argocd-notifications-controller-metrics created
+service/argocd-redis created
+service/argocd-repo-server created
+service/argocd-server created
+service/argocd-server-metrics created
+deployment.apps/argocd-applicationset-controller created
+deployment.apps/argocd-dex-server created
+deployment.apps/argocd-notifications-controller created
+deployment.apps/argocd-redis created
+deployment.apps/argocd-repo-server created
+deployment.apps/argocd-server created
+statefulset.apps/argocd-application-controller created
+networkpolicy.networking.k8s.io/argocd-application-controller-network-policy created
+networkpolicy.networking.k8s.io/argocd-applicationset-controller-network-policy created
+networkpolicy.networking.k8s.io/argocd-dex-server-network-policy created
+networkpolicy.networking.k8s.io/argocd-notifications-controller-network-policy created
+networkpolicy.networking.k8s.io/argocd-redis-network-policy created
+networkpolicy.networking.k8s.io/argocd-repo-server-network-policy created
+networkpolicy.networking.k8s.io/argocd-server-network-policy created
+```
+
+- Verificamos que la instalación de argocd funciona correctamente
+
+```bash
+$ kubectl get all -n argocd
+NAME                                                   READY   STATUS    RESTARTS   AGE
+pod/argocd-application-controller-0                    1/1     Running   0          48s
+pod/argocd-applicationset-controller-d648c7f59-jvsxk   1/1     Running   0          49s
+pod/argocd-dex-server-698f479c5-vp7xw                  1/1     Running   0          49s
+pod/argocd-notifications-controller-64574b4d56-ds6bn   1/1     Running   0          49s
+pod/argocd-redis-6696fc96b8-4657h                      1/1     Running   0          49s
+pod/argocd-repo-server-6fd6bc85f9-tz5p5                1/1     Running   0          48s
+pod/argocd-server-9b6bb754-xbdmx                       1/1     Running   0          48s
+
+NAME                                              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+service/argocd-applicationset-controller          ClusterIP   10.110.180.199   <none>        7000/TCP,8080/TCP            49s
+service/argocd-dex-server                         ClusterIP   10.103.4.58      <none>        5556/TCP,5557/TCP,5558/TCP   49s
+service/argocd-metrics                            ClusterIP   10.102.74.41     <none>        8082/TCP                     49s
+service/argocd-notifications-controller-metrics   ClusterIP   10.105.3.141     <none>        9001/TCP                     49s
+service/argocd-redis                              ClusterIP   10.97.212.216    <none>        6379/TCP                     49s
+service/argocd-repo-server                        ClusterIP   10.103.96.176    <none>        8081/TCP,8084/TCP            49s
+service/argocd-server                             ClusterIP   10.108.55.161    <none>        80/TCP,443/TCP               49s
+service/argocd-server-metrics                     ClusterIP   10.103.228.122   <none>        8083/TCP                     49s
+
+NAME                                               READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/argocd-applicationset-controller   1/1     1            1           49s
+deployment.apps/argocd-dex-server                  1/1     1            1           49s
+deployment.apps/argocd-notifications-controller    1/1     1            1           49s
+deployment.apps/argocd-redis                       1/1     1            1           49s
+deployment.apps/argocd-repo-server                 1/1     1            1           49s
+deployment.apps/argocd-server                      1/1     1            1           48s
+
+NAME                                                         DESIRED   CURRENT   READY   AGE
+replicaset.apps/argocd-applicationset-controller-d648c7f59   1         1         1       49s
+replicaset.apps/argocd-dex-server-698f479c5                  1         1         1       49s
+replicaset.apps/argocd-notifications-controller-64574b4d56   1         1         1       49s
+replicaset.apps/argocd-redis-6696fc96b8                      1         1         1       49s
+replicaset.apps/argocd-repo-server-6fd6bc85f9                1         1         1       48s
+replicaset.apps/argocd-server-9b6bb754                       1         1         1       48s
+
+NAME                                             READY   AGE
+statefulset.apps/argocd-application-controller   1/1     48s
+
+```
+
+- Establecemos el *port-forward* para acceder a la *wui*
+
+```bash
+kubectl port-forward  -n argocd  service/argocd-server  1234:443
+Forwarding from 127.0.0.1:1234 -> 8080
+Forwarding from [::1]:1234 -> 8080
+```
+
+![1afe609c054aed6cd43346846334d04e.png](:/473dae2274324ac8bbf89275e62cae82)
+
+### CICD circuito
+
+Para la construcción del circuito de CICD usaremos una instancia de Gitlab. Con la siguiente *pipeline*. En esencia genera un contenedor con nuestro código utlizando un contenedor. Se hubiera podido utilizar *Kaniko*, pero por tiempo no se ha usado.
+
+Para la instalación de la aplicación hacemos uso de kustomize para generar las nuevas imágenes automáticamente.
+
+```yaml
+stages:
+  - build
+  - test
+  - sec
+  - publish
+  - deploy
+
+build-job:
+  stage: build
+  image: alpine:latest
+  script:
+    - echo "project directory $CI_PROJECT_DIR"
+    - cat "$CI_PROJECT_DIR/main.py" ; echo
+    - echo "$PWD"
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR
+
+unit-test:
+  stage: test
+  image: alpine:latest
+  script:
+    - echo "unit test"
+    - sleep 3
+int-test:
+  stage: test
+  image: alpine:latest
+  script:
+    - echo "integration test"
+    - sleep 3
+
+dependecy-check:
+  stage: sec
+  image: alpine:latest
+  script: 
+    - echo "dependecy check"
+    - sleep 3
+
+docker-build:
+  image: docker:latest
+  stage: publish
+  services:
+    - docker:dind
+  before_script:
+    - docker login $CI_DOCKER_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_USER_PASS
+  script:
+    - docker build -t $CI_DOCKER_REGISTRY/$CI_DOCKER_REGISTRY_PATH:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_DOCKER_REGISTRY/$CI_DOCKER_REGISTRY_PATH:$CI_COMMIT_SHORT_SHA
+
+
+deploy-prod:
+  stage: deploy
+  environment: production
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git curl bash
+    - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+    - mv kustomize /usr/local/bin/
+    - chmod +x /usr/local/bin/kustomize
+    - git remote set-url origin https://oauth2:$TOKEN@gitlab.com/cicd8460412/unir.git
+    - git config --global user.email "services@paranoidworld.es"
+    - git config --global user.name "GitLab CI/CD"
+
+  script:
+    - git checkout -B main
+    - cd deployment/prod
+    - echo "kustomize edit set image $CI_DOCKER_REGISTRY/$CI_DOCKER_REGISTRY_PATH:$CI_COMMIT_SHORT_SHA"
+    - kustomize edit set image $CI_DOCKER_REGISTRY/$CI_DOCKER_REGISTRY_PATH:$CI_COMMIT_SHORT_SHA
+    - cat kustomization.yml
+    - git commit -am '[skip ci] PROD image update'
+    - git push origin main
+  only:
+    - main
+```
+
+- Verificamos los recursos del *namespace* *unir-prod*
+
+```bash
+$ kubectl get all -n unir-prod
+NAME                           READY   STATUS    RESTARTS   AGE
+pod/testapp-7fdd55cd76-fmnbh   1/1     Running   0          7m12s
+
+NAME           TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/test   NodePort   10.105.113.57   <none>        8080:30477/TCP   7m13s
+
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/testapp   1/1     1            1           50m
+
+NAME                                 DESIRED   CURRENT   READY   AGE
+replicaset.apps/testapp-7fdd55cd76   1         1         1       7m12s
+replicaset.apps/testapp-8449c65bb6   0         0         0       50m
+
+```
+
+- Verificamos que la aplicación se despliega correctamente y sin errores.
+
+![81a131470bbfe5cf9e0ef0697b6a6945.png](:/914f392ca6204569b2df5e7767196dc6)  
+![d34373620474d4829d3790de7045f59c.png](:/8a8d4befdc8645afa7589b8b64cb62c0)
+
+

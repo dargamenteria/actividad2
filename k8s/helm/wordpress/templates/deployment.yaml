@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "wordpress.fullname" . }}
+labels:
+  {{- range $key, $val := .Values.labels}}
+    {{ $key }}: {{ $val | quote }}
+  {{- end }}
+
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+    {{- range $key, $val := .Values.selector.matchLabels }}
+      {{ $key }}: {{ $val | quote }}
+    {{- end }}
+
+  template:
+    metadata:
+      labels:
+      {{- range $key, $val := .Values.labels}}
+        {{ $key }}: {{ $val | quote }}
+      {{- end }}
+
+  containers:
+  - name: {{ .Chart.Name }}
+    image: {{ .Values.image.repository }}
+    env: 
+    {{- range $key, $val := .Values.env}}
+    - name: {{ $val.name }}
+      value: {{ $val.value }}
+    {{- end }}
+  
+   {{- with .Values.imagePullSecrets }}
+  imagePullSecrets:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.volumes }}
+  volumes:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
